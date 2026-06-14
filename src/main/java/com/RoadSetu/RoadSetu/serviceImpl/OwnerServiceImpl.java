@@ -1,6 +1,7 @@
 package com.RoadSetu.RoadSetu.serviceImpl;
 
 import com.RoadSetu.RoadSetu.dto.OwnerDetailsDto;
+import com.RoadSetu.RoadSetu.dto.OwnerResponseDto;
 import com.RoadSetu.RoadSetu.dto.ResponseDto;
 import com.RoadSetu.RoadSetu.entity.OwnerEntity;
 import com.RoadSetu.RoadSetu.repository.OwnerRepository;
@@ -20,9 +21,9 @@ public class OwnerServiceImpl implements OwnerService {
 
 
     @Override
-    public ResponseDto saveOwnerDetails(OwnerDetailsDto ownerDetailsDto) {
+    public OwnerResponseDto saveOwnerDetails(OwnerDetailsDto ownerDetailsDto) {
 
-        ResponseDto responseDto = new ResponseDto();
+        OwnerResponseDto responseDto = new OwnerResponseDto();
         try{
 
             OwnerEntity ownerEntity = new OwnerEntity();
@@ -34,10 +35,11 @@ public class OwnerServiceImpl implements OwnerService {
                 ownerEntity.setOwnerPassword(ownerDetailsDto.getOwnerPassword());
                 ownerEntity.setCompanyName(ownerDetailsDto.getCompanyName());
 
-                ownerRepository.save(ownerEntity);
+                ownerEntity = ownerRepository.save(ownerEntity);
 
                 responseDto.setStatusCode(200);
                 responseDto.setMessage("Details Created Success!...");
+                responseDto.setOwnerId(ownerEntity.getOwnerId());
             }
             else {
 

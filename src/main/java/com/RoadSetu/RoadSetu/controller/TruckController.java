@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api")
 
@@ -23,7 +25,7 @@ public class TruckController {
     }
 
     @GetMapping("/gettruckdetails")
-    private ResponseEntity<TruckDetailsDto> getTruckDetails(@RequestParam String ownerId)
+    private ResponseEntity<List<TruckDetailsDto>> getTruckDetails(@RequestParam String ownerId)
     {
         return  ResponseEntity.ok(truckService.getTruckDetails(ownerId));
     }

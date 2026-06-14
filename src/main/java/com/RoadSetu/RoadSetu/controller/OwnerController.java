@@ -1,6 +1,7 @@
 package com.RoadSetu.RoadSetu.controller;
 
 import com.RoadSetu.RoadSetu.dto.OwnerDetailsDto;
+import com.RoadSetu.RoadSetu.dto.OwnerResponseDto;
 import com.RoadSetu.RoadSetu.dto.ResponseDto;
 import com.RoadSetu.RoadSetu.service.OwnerService;
 import jakarta.validation.Valid;
@@ -17,7 +18,7 @@ public class OwnerController {
     private OwnerService ownerService;
 
     @PostMapping("/saveownerdetails")
-    public ResponseEntity<ResponseDto> saveOwnerDetails(@Valid @RequestBody OwnerDetailsDto ownerDetailsDto)
+    public ResponseEntity<OwnerResponseDto> saveOwnerDetails(@Valid @RequestBody OwnerDetailsDto ownerDetailsDto)
     {
         return ResponseEntity.ok(ownerService.saveOwnerDetails(ownerDetailsDto));
     }

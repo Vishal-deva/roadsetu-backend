@@ -10,7 +10,8 @@
     import org.springframework.beans.factory.annotation.Autowired;
     import org.springframework.stereotype.Service;
 
-    import javax.swing.text.html.Option;
+    import java.util.ArrayList;
+    import java.util.List;
     import java.util.Optional;
 
 
@@ -80,28 +81,39 @@
         }
 
         @Override
-        public TruckDetailsDto getTruckDetails(String ownerId) {
+        public List<TruckDetailsDto> getTruckDetails(String ownerId) {
 
-            TruckDetailsDto truckDetailsDto = new TruckDetailsDto();
-            try{
-                if(ownerId == null || ownerId.isEmpty())
-                {
-                    throw new RuntimeException("Id must not  be null");
+            try {
+
+                if (ownerId == null || ownerId.isEmpty()) {
+                    throw new RuntimeException("Owner Id must not be null");
                 }
-                Optional<TruckEntity> truckEntity = truckRepository.findByOwnerOwnerId(ownerId);
-                if(truckEntity.isPresent())
-                {
-                    TruckEntity  truckEntity1 = truckEntity.get();
-                    truckDetailsDto.setTruckId(truckEntity1.getTruckId());
-                    truckDetailsDto.setTruckName(truckEntity1.getTruckName());
-                    truckDetailsDto.setTruckType(truckEntity1.getTruckType());
-                    truckDetailsDto.setRcNumber(truckEntity1.getRcNumber());
-                    truckDetailsDto.setFuelType(truckEntity1.getFuelType());
-                    truckDetailsDto.setTruckNumber(truckEntity1.getTruckNumber());
+
+                List<TruckEntity> truckEntities =
+                        truckRepository.findAllByOwnerOwnerId(ownerId);
+
+                List<TruckDetailsDto> truckDetailsDtoList = new ArrayList<>();
+
+                for (TruckEntity truckEntity : truckEntities) {
+
+                    TruckDetailsDto truckDetailsDto = new TruckDetailsDto();
+
+                    truckDetailsDto.setTruckId(truckEntity.getTruckId());
+                    truckDetailsDto.setTruckName(truckEntity.getTruckName());
+                    truckDetailsDto.setTruckType(truckEntity.getTruckType());
+                    truckDetailsDto.setTruckNumber(truckEntity.getTruckNumber());
+                    truckDetailsDto.setFuelType(truckEntity.getFuelType());
+                    truckDetailsDto.setRcNumber(truckEntity.getRcNumber());
+                    truckDetailsDto.setToneCapacity(truckEntity.getTonCapacity());
+
+                    truckDetailsDtoList.add(truckDetailsDto);
                 }
+
+                return truckDetailsDtoList;
+
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw new RuntimeException("Error while fetching truck details: "
+                        + e.getMessage());
             }
-            return truckDetailsDto;
         }
     }
