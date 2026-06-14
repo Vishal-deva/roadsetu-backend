@@ -12,7 +12,9 @@ public class DriverEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String driverId;
 
-    private String ownerId;
+    @ManyToOne
+    @JoinColumn(name = "owner_id")
+    private OwnerEntity owner;
 
     @Column(nullable = false)
     private String driverName;
