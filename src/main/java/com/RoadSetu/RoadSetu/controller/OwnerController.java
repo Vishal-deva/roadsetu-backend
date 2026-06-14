@@ -29,4 +29,10 @@ public class OwnerController {
         return ResponseEntity.ok(ownerService.getOwnerDetails(id));
     }
 
+    @PostMapping("/login")
+    public ResponseEntity<OwnerResponseDto> login(@RequestBody OwnerDetailsDto ownerDetailsDto)
+    {
+        return ResponseEntity.ok(ownerService.login(ownerDetailsDto));
+    }
+
 }

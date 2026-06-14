@@ -8,4 +8,6 @@ public interface OwnerService {
     OwnerResponseDto saveOwnerDetails(OwnerDetailsDto ownerDetailsDto);
 
     OwnerDetailsDto getOwnerDetails(String id);
+
+    OwnerResponseDto login(OwnerDetailsDto ownerDetailsDto);
 }

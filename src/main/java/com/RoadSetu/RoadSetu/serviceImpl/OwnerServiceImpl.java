@@ -24,11 +24,10 @@ public class OwnerServiceImpl implements OwnerService {
     public OwnerResponseDto saveOwnerDetails(OwnerDetailsDto ownerDetailsDto) {
 
         OwnerResponseDto responseDto = new OwnerResponseDto();
-        try{
+        try {
 
             OwnerEntity ownerEntity = new OwnerEntity();
-            if(ownerDetailsDto.getOwnerId() == null)
-            {
+            if (ownerDetailsDto.getOwnerId() == null) {
                 ownerEntity.setOwnerName(ownerDetailsDto.getOwnerName());
                 ownerEntity.setOwnerEmailId(ownerDetailsDto.getOwnerEmailId());
                 ownerEntity.setOwnerMobileNumber(ownerDetailsDto.getOwnerMobileNumber());
@@ -40,8 +39,7 @@ public class OwnerServiceImpl implements OwnerService {
                 responseDto.setStatusCode(200);
                 responseDto.setMessage("Details Created Success!...");
                 responseDto.setOwnerId(ownerEntity.getOwnerId());
-            }
-            else {
+            } else {
 
                 ownerEntity.setOwnerEmailId(ownerDetailsDto.getOwnerEmailId());
                 ownerEntity.setOwnerMobileNumber(ownerDetailsDto.getOwnerMobileNumber());
@@ -64,23 +62,55 @@ public class OwnerServiceImpl implements OwnerService {
                 throw new RuntimeException("Id cannot be null");
             }
             OwnerDetailsDto ownerDetailsDto = new OwnerDetailsDto();
-                Optional<OwnerEntity> ownEntOpt = ownerRepository.findById(id);
-                if(ownEntOpt.isPresent())
-                {
-                    OwnerEntity ownerEntity = ownEntOpt.get();
-                    ownerDetailsDto.setOwnerId(ownerEntity.getOwnerId());
-                    ownerDetailsDto.setOwnerName(ownerEntity.getOwnerName());
-                    ownerDetailsDto.setOwnerMobileNumber(ownerEntity.getOwnerMobileNumber());
-                    ownerDetailsDto.setOwnerEmailId(ownerEntity.getOwnerEmailId());
-                    ownerDetailsDto.setCompanyName(ownerEntity.getCompanyName());
+            Optional<OwnerEntity> ownEntOpt = ownerRepository.findById(id);
+            if (ownEntOpt.isPresent()) {
+                OwnerEntity ownerEntity = ownEntOpt.get();
+                ownerDetailsDto.setOwnerId(ownerEntity.getOwnerId());
+                ownerDetailsDto.setOwnerName(ownerEntity.getOwnerName());
+                ownerDetailsDto.setOwnerMobileNumber(ownerEntity.getOwnerMobileNumber());
+                ownerDetailsDto.setOwnerEmailId(ownerEntity.getOwnerEmailId());
+                ownerDetailsDto.setCompanyName(ownerEntity.getCompanyName());
 
-                    return ownerDetailsDto;
-                }
-                else{
-                    throw new RuntimeException("Details Not Found");
-                }
+                return ownerDetailsDto;
+            } else {
+                throw new RuntimeException("Details Not Found");
+            }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public OwnerResponseDto login(OwnerDetailsDto ownerDetailsDto) {
+
+        OwnerResponseDto responseDto = new OwnerResponseDto();
+
+        try {
+
+            Optional<OwnerEntity> ownerEntity =
+                    ownerRepository.findByownerEmailId(
+                            ownerDetailsDto.getOwnerEmailId()
+                    );
+
+            if (ownerEntity.isPresent()) {
+
+                OwnerEntity ownerValue = ownerEntity.get();
+
+                responseDto.setOwnerId(ownerValue.getOwnerId());
+                responseDto.setMessage("Login Successfully");
+                responseDto.setStatusCode(200);
+
+            } else {
+
+                responseDto.setMessage("Invalid email or password");
+                responseDto.setStatusCode(401);
+            }
+
+        } catch (Exception e) {
+            responseDto.setMessage("Something went wrong: " + e.getMessage());
+            responseDto.setStatusCode(500);
+        }
+
+        return responseDto;
     }
 }
