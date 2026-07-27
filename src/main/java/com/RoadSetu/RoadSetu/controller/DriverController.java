@@ -2,6 +2,7 @@ package com.RoadSetu.RoadSetu.controller;
 
 
 import com.RoadSetu.RoadSetu.dto.DriverDetailsDto;
+import com.RoadSetu.RoadSetu.dto.LoginDto;
 import com.RoadSetu.RoadSetu.dto.ResponseDto;
 import com.RoadSetu.RoadSetu.service.DriverService;
 import com.RoadSetu.RoadSetu.service.TruckService;
@@ -35,5 +36,14 @@ public class DriverController {
     private ResponseEntity<List<DriverDetailsDto>>getAvailableDriver(@RequestParam String ownerId)
     {
         return  ResponseEntity.ok(driverService.getAvailableDriver(ownerId));
+    }
+
+    @PostMapping("/driverlogin")
+    public ResponseEntity<ResponseDto> driverLogin(
+            @RequestBody LoginDto loginDto){
+
+        return ResponseEntity.ok(
+                driverService.driverLogin(loginDto)
+        );
     }
 }

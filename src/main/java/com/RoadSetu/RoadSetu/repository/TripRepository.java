@@ -13,5 +13,7 @@ public interface TripRepository extends JpaRepository<TripEntity, String> {
             String ownerId,
             String truckId
     );
+
+    List<TripEntity> findByDriver_DriverIdAndTruck_TruckId(String driverId, String truckId);
 }
 

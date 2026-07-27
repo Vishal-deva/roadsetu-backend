@@ -10,4 +10,6 @@ public interface TripService {
     ResponseDto saveTripDetails(TripDetailsDto tripDetailsDto);
 
     List<TripDetailsDto> gettripdetails(String ownerId, String truckId);
+
+    List<TripDetailsDto> getTripDetailsByDriver(String driverId, String truckId);
 }

@@ -187,4 +187,44 @@ public class TripServiceImpl implements TripService {
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public List<TripDetailsDto> getTripDetailsByDriver(String driverId, String truckId) {
+
+        try {
+
+            List<TripEntity> tripEntities =
+                    tripRepository.findByDriver_DriverIdAndTruck_TruckId(driverId, truckId);
+
+            List<TripDetailsDto> tripDetailsDtos = new ArrayList<>();
+
+            for (TripEntity tripEntity : tripEntities) {
+
+                TripDetailsDto tripDetailsDto = new TripDetailsDto();
+
+                tripDetailsDto.setTripId(tripEntity.getTripId());
+                tripDetailsDto.setOwnerId(tripEntity.getOwner().getOwnerId());
+                tripDetailsDto.setDriverId(tripEntity.getDriver().getDriverId());
+                tripDetailsDto.setTruckId(tripEntity.getTruck().getTruckId());
+                tripDetailsDto.setDriverId(tripEntity.getDriver().getDriverName());
+                tripDetailsDto.setDriverName(tripEntity.getDriver().getDriverMobileNumber());
+                tripDetailsDto.setFromLocation(tripEntity.getFromLocation());
+                tripDetailsDto.setToLocation(tripEntity.getToLocation());
+                tripDetailsDto.setStatus(tripEntity.getStatus());
+                tripDetailsDto.setStartDate(tripEntity.getStartDate());
+                tripDetailsDto.setEndDate(tripEntity.getEndDate());
+                tripDetailsDto.setRentAmount(tripEntity.getRentAmount());
+                tripDetailsDto.setDays(tripEntity.getDays());
+
+                tripDetailsDtos.add(tripDetailsDto);
+            }
+
+            return tripDetailsDtos;
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+
+    }
 }

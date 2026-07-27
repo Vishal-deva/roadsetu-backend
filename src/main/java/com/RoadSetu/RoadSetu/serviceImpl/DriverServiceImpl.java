@@ -1,6 +1,7 @@
 package com.RoadSetu.RoadSetu.serviceImpl;
 
 import com.RoadSetu.RoadSetu.dto.DriverDetailsDto;
+import com.RoadSetu.RoadSetu.dto.LoginDto;
 import com.RoadSetu.RoadSetu.dto.ResponseDto;
 import com.RoadSetu.RoadSetu.entity.DriverEntity;
 import com.RoadSetu.RoadSetu.entity.OwnerEntity;
@@ -41,9 +42,12 @@ public class DriverServiceImpl implements DriverService {
                 //Add New Driver
                 DriverEntity driverEntity = new DriverEntity();
                 driverEntity.setDriverName(driverDetailsDto.getDriverName());
+                driverEntity.setDriverEmailId(driverDetailsDto.getDriverEmailId());
+                driverEntity.setPassword(driverDetailsDto.getPassword());
                 driverEntity.setDriverMobileNumber(driverDetailsDto.getDriverMobileNumber());
                 driverEntity.setDriverLicense(driverDetailsDto.getDriverLicense());
                 driverEntity.setDriverNative(driverDetailsDto.getDriverNative());
+                driverEntity.setRole("DRIVER");
                 driverEntity.setOwner(owner);
 
                 driverRepository.save(driverEntity);
@@ -129,5 +133,79 @@ public class DriverServiceImpl implements DriverService {
         }
 
         return driverDetailsDtos;
+    }
+    @Override
+    public ResponseDto driverLogin(
+            LoginDto loginDto) {
+
+
+        ResponseDto response =
+                new ResponseDto();
+
+
+
+        try{
+
+
+            DriverEntity driver =
+                    driverRepository
+                            .findByDriverEmailId(
+                                    loginDto.getEmail()
+                            )
+                            .orElseThrow(
+                                    ()->new RuntimeException(
+                                            "Driver Not Found"
+                                    )
+                            );
+
+
+
+
+            if(driver.getPassword()==null ||
+                    !driver.getPassword()
+                            .equals(loginDto.getPassword())){
+
+
+                response.setStatusCode(401);
+
+                response.setMessage(
+                        "Invalid email or password"
+                );
+
+
+                return response;
+
+            }
+
+
+
+
+
+            response.setStatusCode(200);
+
+            response.setMessage(
+                    "Login Successfully"
+            );
+
+            response.setOwnerId(driver.getOwner().getOwnerId());
+            response.setDriverId(driver.getDriverId());
+
+            response.setRole(
+                    "DRIVER"
+            );
+
+        }
+        catch(Exception e){
+
+
+            response.setStatusCode(500);
+
+            response.setMessage(
+                    e.getMessage()
+            );
+
+        }
+        return response;
+
     }
 }

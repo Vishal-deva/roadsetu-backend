@@ -31,4 +31,10 @@ public class TripController {
         return ResponseEntity.ok(
                 tripService.gettripdetails(ownerId, truckId));
     }
+
+    @GetMapping("/gettripbydriver")
+    public ResponseEntity<List<TripDetailsDto>> getTripDetailsByDriver(@RequestParam String driverId, @RequestParam String truckId)
+    {
+        return  ResponseEntity.ok(tripService.getTripDetailsByDriver( driverId, truckId));
+    }
 }

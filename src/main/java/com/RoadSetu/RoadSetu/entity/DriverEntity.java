@@ -31,4 +31,8 @@ public class DriverEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private DriverStatus driverStatus = DriverStatus.AVAILABLE;
+
+    private String driverEmailId;
+    private String password;
+    private String role;
 }

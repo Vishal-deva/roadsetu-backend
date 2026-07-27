@@ -13,4 +13,6 @@ public class DriverDetailsDto {
     private String driverMobileNumber;
     private String driverNative;
     private String driverTruck;
+    private String driverEmailId;
+    private String password;
 }

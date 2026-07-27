@@ -13,4 +13,7 @@ public interface DriverRepository extends JpaRepository<DriverEntity, String> {
     List<DriverEntity> findAllByOwnerOwnerIdAndDriverStatus(
             String ownerId,
             DriverStatus driverStatus);
+
+    Optional<DriverEntity> findByDriverEmailId(String driverEmailId);
+
 }
