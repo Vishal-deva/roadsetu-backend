@@ -1,5 +1,6 @@
 package com.RoadSetu.RoadSetu.entity;
 
+import com.RoadSetu.RoadSetu.enums.DriverStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -13,7 +14,7 @@ public class DriverEntity {
     private String driverId;
 
     @ManyToOne
-    @JoinColumn(name = "owner_id")
+    @JoinColumn(name = "owner_id", nullable = false)
     private OwnerEntity owner;
 
     @Column(nullable = false)
@@ -27,5 +28,7 @@ public class DriverEntity {
 
     private String driverNative;
 
-    private String driverTruck;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private DriverStatus driverStatus = DriverStatus.AVAILABLE;
 }

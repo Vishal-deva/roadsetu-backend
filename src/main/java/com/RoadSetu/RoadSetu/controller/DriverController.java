@@ -30,4 +30,10 @@ public class DriverController {
     {
         return ResponseEntity.ok(driverService.getDriverDetails(ownerId));
     }
+
+    @GetMapping("/getavailabledriver")
+    private ResponseEntity<List<DriverDetailsDto>>getAvailableDriver(@RequestParam String ownerId)
+    {
+        return  ResponseEntity.ok(driverService.getAvailableDriver(ownerId));
+    }
 }

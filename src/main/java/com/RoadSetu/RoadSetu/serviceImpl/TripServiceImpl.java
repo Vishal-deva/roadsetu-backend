@@ -168,7 +168,8 @@ public class TripServiceImpl implements TripService {
                 tripDetailsDto.setOwnerId(tripEntity.getOwner().getOwnerId());
                 tripDetailsDto.setDriverId(tripEntity.getDriver().getDriverId());
                 tripDetailsDto.setTruckId(tripEntity.getTruck().getTruckId());
-
+                tripDetailsDto.setDriverId(tripEntity.getDriver().getDriverName());
+                tripDetailsDto.setDriverName(tripEntity.getDriver().getDriverMobileNumber());
                 tripDetailsDto.setFromLocation(tripEntity.getFromLocation());
                 tripDetailsDto.setToLocation(tripEntity.getToLocation());
                 tripDetailsDto.setStatus(tripEntity.getStatus());

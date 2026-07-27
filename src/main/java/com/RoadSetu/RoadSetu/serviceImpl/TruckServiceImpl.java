@@ -1,119 +1,393 @@
-    package com.RoadSetu.RoadSetu.serviceImpl;
+package com.RoadSetu.RoadSetu.serviceImpl;
 
-    import com.RoadSetu.RoadSetu.dto.ResponseDto;
-    import com.RoadSetu.RoadSetu.dto.TruckDetailsDto;
-    import com.RoadSetu.RoadSetu.entity.OwnerEntity;
-    import com.RoadSetu.RoadSetu.entity.TruckEntity;
-    import com.RoadSetu.RoadSetu.repository.OwnerRepository;
-    import com.RoadSetu.RoadSetu.repository.TruckRepository;
-    import com.RoadSetu.RoadSetu.service.TruckService;
-    import org.springframework.beans.factory.annotation.Autowired;
-    import org.springframework.stereotype.Service;
+import com.RoadSetu.RoadSetu.dto.ResponseDto;
+import com.RoadSetu.RoadSetu.dto.TruckDetailsDto;
+import com.RoadSetu.RoadSetu.entity.DriverEntity;
+import com.RoadSetu.RoadSetu.entity.OwnerEntity;
+import com.RoadSetu.RoadSetu.entity.TruckEntity;
+import com.RoadSetu.RoadSetu.enums.DriverStatus;
+import com.RoadSetu.RoadSetu.enums.TruckStatus;
+import com.RoadSetu.RoadSetu.repository.DriverRepository;
+import com.RoadSetu.RoadSetu.repository.OwnerRepository;
+import com.RoadSetu.RoadSetu.repository.TruckRepository;
+import com.RoadSetu.RoadSetu.service.TruckService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-    import java.util.ArrayList;
-    import java.util.List;
-    import java.util.Optional;
+import java.util.ArrayList;
+import java.util.List;
 
 
-    @Service
-    public class TruckServiceImpl implements TruckService {
+@Service
+public class TruckServiceImpl implements TruckService {
 
 
-        @Autowired
-        private OwnerRepository ownerRepository;
+    @Autowired
+    private OwnerRepository ownerRepository;
 
-        @Autowired
-        private TruckRepository truckRepository;
+    @Autowired
+    private TruckRepository truckRepository;
 
-        @Override
-        public ResponseDto saveTruckDetails(TruckDetailsDto truckDetailsDto) {
+    @Autowired
+    private DriverRepository driverRepository;
 
-            ResponseDto responseDto = new ResponseDto();
 
-            try {
+    @Override
+    public ResponseDto saveTruckDetails(TruckDetailsDto truckDetailsDto) {
 
-                OwnerEntity ownerEntity = ownerRepository
-                        .findById(truckDetailsDto.getOwnerId())
-                        .orElseThrow(() -> new RuntimeException("Owner Not Found"));
+        ResponseDto responseDto = new ResponseDto();
 
-                // CREATE CASE
-                if (truckDetailsDto.getTruckId() == null || truckDetailsDto.getTruckId().isEmpty()) {
+        try {
 
-                    TruckEntity truckEntity = new TruckEntity();
-                    truckEntity.setTruckName(truckDetailsDto.getTruckName());
-                    truckEntity.setTruckType(truckDetailsDto.getTruckType());
-                    truckEntity.setTruckNumber(truckDetailsDto.getTruckNumber());
-                    truckEntity.setOwner(ownerEntity);
-                    truckEntity.setFuelType(truckDetailsDto.getFuelType());
-                    truckEntity.setRcNumber(truckDetailsDto.getRcNumber());
-                    truckEntity.setTonCapacity(truckDetailsDto.getToneCapacity());
+            OwnerEntity ownerEntity = ownerRepository
+                    .findById(truckDetailsDto.getOwnerId())
+                    .orElseThrow(() -> new RuntimeException("Owner Not Found"));
 
-                    truckRepository.save(truckEntity);
 
-                    responseDto.setMessage("Truck Created Successfully");
-                    responseDto.setStatusCode(200);
-                }
+            // CREATE TRUCK
+            if (truckDetailsDto.getTruckId() == null ||
+                    truckDetailsDto.getTruckId().isEmpty()) {
 
-                // UPDATE CASE (optional but important)
-                else {
-                    TruckEntity truckEntity = truckRepository.findById(truckDetailsDto.getTruckId())
-                            .orElseThrow(() -> new RuntimeException("Truck Not Found"));
 
-                    truckEntity.setTruckName(truckDetailsDto.getTruckName());
-                    truckEntity.setTruckType(truckDetailsDto.getTruckType());
-                    truckEntity.setTruckNumber(truckDetailsDto.getTruckNumber());
-                    truckEntity.setFuelType(truckDetailsDto.getFuelType());
-                    truckEntity.setRcNumber(truckDetailsDto.getRcNumber());
-                    truckEntity.setTonCapacity(truckDetailsDto.getToneCapacity());
+                TruckEntity truckEntity = new TruckEntity();
 
-                    truckRepository.save(truckEntity);
+                truckEntity.setTruckName(truckDetailsDto.getTruckName());
+                truckEntity.setTruckNumber(truckDetailsDto.getTruckNumber());
+                truckEntity.setTruckType(truckDetailsDto.getTruckType());
+                truckEntity.setFuelType(truckDetailsDto.getFuelType());
+                truckEntity.setRcNumber(truckDetailsDto.getRcNumber());
+                truckEntity.setTonCapacity(truckDetailsDto.getToneCapacity());
+                truckEntity.setOwner(ownerEntity);
 
-                    responseDto.setMessage("Truck Updated Successfully");
-                    responseDto.setStatusCode(200);
-                }
+                // Default status
+                truckEntity.setTruckStatus(TruckStatus.AVAILABLE);
 
-            } catch (Exception e) {
-                responseDto.setMessage("Error: " + e.getMessage());
-                responseDto.setStatusCode(500);
+
+                truckRepository.save(truckEntity);
+
+
+                responseDto.setMessage("Truck Created Successfully");
+                responseDto.setStatusCode(200);
+
             }
 
-            return responseDto;
-        }
 
-        @Override
-        public List<TruckDetailsDto> getTruckDetails(String ownerId) {
+            // UPDATE TRUCK
+            else {
 
-            try {
 
-                if (ownerId == null || ownerId.isEmpty()) {
-                    throw new RuntimeException("Owner Id must not be null");
+                TruckEntity truckEntity = truckRepository
+                        .findById(truckDetailsDto.getTruckId())
+                        .orElseThrow(() ->
+                                new RuntimeException("Truck Not Found"));
+
+
+                // Owner validation
+                if(!truckEntity.getOwner()
+                        .getOwnerId()
+                        .equals(truckDetailsDto.getOwnerId())) {
+
+                    throw new RuntimeException(
+                            "Truck does not belong to this owner"
+                    );
                 }
 
-                List<TruckEntity> truckEntities =
-                        truckRepository.findAllByOwnerOwnerId(ownerId);
 
-                List<TruckDetailsDto> truckDetailsDtoList = new ArrayList<>();
 
-                for (TruckEntity truckEntity : truckEntities) {
+                // Update truck details
 
-                    TruckDetailsDto truckDetailsDto = new TruckDetailsDto();
+                truckEntity.setTruckName(truckDetailsDto.getTruckName());
+                truckEntity.setTruckNumber(truckDetailsDto.getTruckNumber());
+                truckEntity.setTruckType(truckDetailsDto.getTruckType());
+                truckEntity.setFuelType(truckDetailsDto.getFuelType());
+                truckEntity.setRcNumber(truckDetailsDto.getRcNumber());
+                truckEntity.setTonCapacity(truckDetailsDto.getToneCapacity());
+                truckEntity.setCurrentLocation(
+                        truckDetailsDto.getCurrentLocation()
+                );
 
-                    truckDetailsDto.setTruckId(truckEntity.getTruckId());
-                    truckDetailsDto.setTruckName(truckEntity.getTruckName());
-                    truckDetailsDto.setTruckType(truckEntity.getTruckType());
-                    truckDetailsDto.setTruckNumber(truckEntity.getTruckNumber());
-                    truckDetailsDto.setFuelType(truckEntity.getFuelType());
-                    truckDetailsDto.setRcNumber(truckEntity.getRcNumber());
-                    truckDetailsDto.setToneCapacity(truckEntity.getTonCapacity());
 
-                    truckDetailsDtoList.add(truckDetailsDto);
+                // Update truck status
+
+                if(truckDetailsDto.getTruckStatus()!=null)
+                {
+                    truckEntity.setTruckStatus(
+                            truckDetailsDto.getTruckStatus()
+                    );
                 }
 
-                return truckDetailsDtoList;
 
-            } catch (Exception e) {
-                throw new RuntimeException("Error while fetching truck details: "
-                        + e.getMessage());
+
+                // Remove driver from truck
+
+                if((truckDetailsDto.getDriverId()==null ||
+                        truckDetailsDto.getDriverId().isEmpty())
+                        &&
+                        truckEntity.getDriver()!=null)
+                {
+
+                    DriverEntity oldDriver =
+                            truckEntity.getDriver();
+
+                    oldDriver.setDriverStatus(
+                            DriverStatus.AVAILABLE
+                    );
+
+                    truckEntity.setTruckStatus(TruckStatus.AVAILABLE);
+                    truckRepository.save(truckEntity);
+                    driverRepository.save(oldDriver);
+                    truckEntity.setDriver(null);
+                }
+
+
+
+                // Assign driver
+
+                else if(truckDetailsDto.getDriverId()!=null &&
+                        !truckDetailsDto.getDriverId().isEmpty())
+                {
+                    DriverEntity newDriver = driverRepository.findById(
+                                            truckDetailsDto.getDriverId()
+                                    )
+                                    .orElseThrow(() ->
+                                            new RuntimeException(
+                                                    "Driver Not Found"
+                                            ));
+
+                    // Already assigned check
+                    if(newDriver.getDriverStatus()
+                            == DriverStatus.ASSIGNED
+                            &&
+                            (truckEntity.getDriver()==null ||
+                                    !truckEntity.getDriver()
+                                            .getDriverId()
+                                            .equals(newDriver.getDriverId())))
+                    {
+
+                        throw new RuntimeException(
+                                "Driver already assigned to another truck"
+                        );
+                    }
+
+
+
+                    // Release old driver
+
+                    if(truckEntity.getDriver()!=null &&
+                            !truckEntity.getDriver()
+                                    .getDriverId()
+                                    .equals(newDriver.getDriverId()))
+                    {
+
+                        DriverEntity oldDriver =
+                                truckEntity.getDriver();
+
+                        oldDriver.setDriverStatus(
+                                DriverStatus.AVAILABLE
+                        );
+
+
+                        driverRepository.save(oldDriver);
+                    }
+
+
+
+                    // Assign new driver
+
+                    newDriver.setDriverStatus(
+                            DriverStatus.ASSIGNED
+                    );
+                    truckEntity.setTruckStatus(TruckStatus.ON_TRIP);
+                    driverRepository.save(newDriver);
+
+
+                    truckEntity.setDriver(newDriver);
+
+                }
+
+
+
+                truckRepository.save(truckEntity);
+
+
+                responseDto.setMessage(
+                        "Truck Updated Successfully"
+                );
+
+                responseDto.setStatusCode(200);
+
             }
+
+
+        } catch(Exception e){
+
+            responseDto.setMessage(
+                    "Error : " + e.getMessage()
+            );
+
+            responseDto.setStatusCode(500);
         }
+
+
+        return responseDto;
     }
+
+
+
+
+
+    @Override
+    public List<TruckDetailsDto> getTruckDetails(String ownerId) {
+
+
+        if(ownerId==null || ownerId.isEmpty())
+        {
+            throw new RuntimeException(
+                    "Owner Id must not be null"
+            );
+        }
+
+
+        List<TruckEntity> truckEntities =
+                truckRepository.findAllByOwnerOwnerId(ownerId);
+
+
+
+        List<TruckDetailsDto> truckDetailsDtoList =
+                new ArrayList<>();
+
+
+        for(TruckEntity truckEntity : truckEntities)
+        {
+
+            TruckDetailsDto dto =
+                    new TruckDetailsDto();
+
+
+            dto.setTruckId(
+                    truckEntity.getTruckId()
+            );
+
+            dto.setTruckName(
+                    truckEntity.getTruckName()
+            );
+
+            dto.setTruckNumber(
+                    truckEntity.getTruckNumber()
+            );
+
+            dto.setTruckType(
+                    truckEntity.getTruckType()
+            );
+
+            dto.setFuelType(
+                    truckEntity.getFuelType()
+            );
+
+            dto.setRcNumber(
+                    truckEntity.getRcNumber()
+            );
+
+            dto.setToneCapacity(
+                    truckEntity.getTonCapacity()
+            );
+
+
+            dto.setOwnerId(
+                    truckEntity.getOwner()
+                            .getOwnerId()
+            );
+
+
+            dto.setTruckStatus(
+                    truckEntity.getTruckStatus()
+            );
+
+
+
+            // Driver details
+
+            if(truckEntity.getDriver()!=null)
+            {
+
+                dto.setDriverId(
+                        truckEntity.getDriver()
+                                .getDriverId()
+                );
+
+
+                dto.setDriverName(
+                        truckEntity.getDriver()
+                                .getDriverName()
+                );
+
+
+                dto.setDriverMobileNumber(
+                        truckEntity.getDriver()
+                                .getDriverMobileNumber()
+                );
+
+            }
+
+
+            truckDetailsDtoList.add(dto);
+
+        }
+
+
+        return truckDetailsDtoList;
+
+    }
+
+    @Override
+    public List<TruckDetailsDto> getAvailableTruck(String ownerId) {
+
+
+        List<TruckEntity> trucks =
+                truckRepository.findAllByOwnerOwnerIdAndTruckStatus(
+                        ownerId,
+                        TruckStatus.AVAILABLE
+                );
+
+
+        List<TruckDetailsDto> response =
+                new ArrayList<>();
+
+
+        for(TruckEntity truck : trucks)
+        {
+
+            TruckDetailsDto dto = new TruckDetailsDto();
+
+
+            dto.setTruckId(
+                    truck.getTruckId()
+            );
+
+            dto.setTruckName(
+                    truck.getTruckName()
+            );
+
+            dto.setTruckNumber(
+                    truck.getTruckNumber()
+            );
+
+            dto.setTruckStatus(
+                    truck.getTruckStatus()
+            );
+
+
+            dto.setOwnerId(
+                    truck.getOwner().getOwnerId()
+            );
+
+
+            response.add(dto);
+
+        }
+
+
+        return response;
+    }
+
+}

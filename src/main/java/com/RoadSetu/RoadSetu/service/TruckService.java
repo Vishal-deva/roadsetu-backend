@@ -9,4 +9,6 @@ public interface TruckService {
     ResponseDto saveTruckDetails(TruckDetailsDto truckDetailsDto);
 
     List<TruckDetailsDto> getTruckDetails(String id);
+
+    List<TruckDetailsDto> getAvailableTruck(String ownerId);
 }

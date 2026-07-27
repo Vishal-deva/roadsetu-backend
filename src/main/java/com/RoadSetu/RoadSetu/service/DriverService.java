@@ -9,4 +9,6 @@ public interface DriverService {
     ResponseDto saveDriverDetails(DriverDetailsDto driverDetailsDto);
 
     List<DriverDetailsDto> getDriverDetails(String ownerId);
+
+    List<DriverDetailsDto> getAvailableDriver(String ownerId);
 }

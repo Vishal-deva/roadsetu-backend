@@ -11,7 +11,6 @@ public class TripEntity {
     @Id
     @UuidGenerator
     private String tripId;
-
     private String fromLocation;
     private String toLocation;
     private String startDate;
