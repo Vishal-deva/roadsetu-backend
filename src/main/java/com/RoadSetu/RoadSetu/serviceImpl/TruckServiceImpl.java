@@ -385,8 +385,6 @@ public class TruckServiceImpl implements TruckService {
             response.add(dto);
 
         }
-
-
         return response;
     }
 

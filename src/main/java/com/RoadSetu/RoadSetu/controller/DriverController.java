@@ -4,6 +4,7 @@ package com.RoadSetu.RoadSetu.controller;
 import com.RoadSetu.RoadSetu.dto.DriverDetailsDto;
 import com.RoadSetu.RoadSetu.dto.LoginDto;
 import com.RoadSetu.RoadSetu.dto.ResponseDto;
+import com.RoadSetu.RoadSetu.dto.TripDetailsDto;
 import com.RoadSetu.RoadSetu.service.DriverService;
 import com.RoadSetu.RoadSetu.service.TruckService;
 import org.apache.coyote.Response;
@@ -46,4 +47,11 @@ public class DriverController {
                 driverService.driverLogin(loginDto)
         );
     }
+
+    @GetMapping("/getdriverprofile")
+    public ResponseEntity<DriverDetailsDto> getDriverProfile(@RequestParam String driverId)
+    {
+        return ResponseEntity.ok(driverService.getDriverProfile(driverId));
+    }
+
 }

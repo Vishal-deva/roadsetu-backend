@@ -12,6 +12,7 @@ public class ResponseDto {
 
 
     private String driverId;
+    private String driverName;
     private String truckId;
     private String ownerId;
 

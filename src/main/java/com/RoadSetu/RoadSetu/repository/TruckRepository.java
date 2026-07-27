@@ -13,4 +13,5 @@ public interface TruckRepository extends JpaRepository<TruckEntity, String> {
     List<TruckEntity> findAllByOwnerOwnerId(String ownerId);
 
     List<TruckEntity> findAllByOwnerOwnerIdAndTruckStatus(String ownerId, TruckStatus truckStatus);
+    Optional<TruckEntity> findByDriver_DriverId(String driverId);
 }

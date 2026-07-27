@@ -16,4 +16,5 @@ public interface DriverRepository extends JpaRepository<DriverEntity, String> {
 
     Optional<DriverEntity> findByDriverEmailId(String driverEmailId);
 
+
 }

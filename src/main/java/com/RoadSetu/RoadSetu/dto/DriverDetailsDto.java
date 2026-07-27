@@ -15,4 +15,8 @@ public class DriverDetailsDto {
     private String driverTruck;
     private String driverEmailId;
     private String password;
+
+    private String truckId;
+    private String truckNumber;
+    private String responseMessage;
 }

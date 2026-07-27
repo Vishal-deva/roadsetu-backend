@@ -5,9 +5,11 @@ import com.RoadSetu.RoadSetu.dto.LoginDto;
 import com.RoadSetu.RoadSetu.dto.ResponseDto;
 import com.RoadSetu.RoadSetu.entity.DriverEntity;
 import com.RoadSetu.RoadSetu.entity.OwnerEntity;
+import com.RoadSetu.RoadSetu.entity.TruckEntity;
 import com.RoadSetu.RoadSetu.enums.DriverStatus;
 import com.RoadSetu.RoadSetu.repository.DriverRepository;
 import com.RoadSetu.RoadSetu.repository.OwnerRepository;
+import com.RoadSetu.RoadSetu.repository.TruckRepository;
 import com.RoadSetu.RoadSetu.service.DriverService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,9 @@ public class DriverServiceImpl implements DriverService {
 
     @Autowired
     private OwnerRepository ownerRepository;
+
+    @Autowired
+    private TruckRepository truckRepository;
 
     @Override
     public ResponseDto saveDriverDetails(DriverDetailsDto driverDetailsDto) {
@@ -172,15 +177,8 @@ public class DriverServiceImpl implements DriverService {
                         "Invalid email or password"
                 );
 
-
                 return response;
-
             }
-
-
-
-
-
             response.setStatusCode(200);
 
             response.setMessage(
@@ -207,5 +205,43 @@ public class DriverServiceImpl implements DriverService {
         }
         return response;
 
+    }
+
+    @Override
+    public DriverDetailsDto getDriverProfile(String driverId) {
+        try{
+
+            DriverDetailsDto driverDetailsDto = new DriverDetailsDto();
+            Optional<DriverEntity>driverEntity = driverRepository.findByDriverId(driverId);
+
+            if(driverEntity.isPresent())
+            {
+                DriverEntity driver = driverEntity.get();
+
+                driverDetailsDto.setDriverEmailId(driver.getDriverEmailId());
+                driverDetailsDto.setDriverMobileNumber(driver.getDriverMobileNumber());
+                driverDetailsDto.setDriverName(driver.getDriverName());
+                driverDetailsDto.setDriverLicense(driver.getDriverLicense());
+
+
+                Optional<TruckEntity>truckEntity = truckRepository.findByDriver_DriverId(driverId);
+
+                if(truckEntity.isPresent())
+                {
+                    TruckEntity truck = truckEntity.get();
+
+                    driverDetailsDto.setTruckId(truck.getTruckId());
+                    driverDetailsDto.setTruckNumber(truck.getTruckNumber());
+                }
+                else {
+                    driverDetailsDto.setTruckId(null);
+                    driverDetailsDto.setTruckNumber("Currently no truck assigned to you");
+                }
+            }
+            return driverDetailsDto;
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

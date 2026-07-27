@@ -14,4 +14,6 @@ public interface DriverService {
     List<DriverDetailsDto> getAvailableDriver(String ownerId);
 
     ResponseDto driverLogin(LoginDto loginDto);
+
+    DriverDetailsDto getDriverProfile(String driverId);
 }
