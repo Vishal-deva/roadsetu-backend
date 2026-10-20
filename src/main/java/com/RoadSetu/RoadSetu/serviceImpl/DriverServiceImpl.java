@@ -86,14 +86,33 @@ public class DriverServiceImpl implements DriverService {
                 driverDetailsDto.getDriverLicense());
         driverEntity.setDriverNative(driverDetailsDto.getDriverNative());
 
-        // 4. If no truck was selected, update profile only
+        // 4. If truckId is empty, unassign the driver from the truck
         if (driverDetailsDto.getTruckId() == null
-                || driverDetailsDto.getTruckId().isEmpty()) {
+                || driverDetailsDto.getTruckId().trim().isEmpty()) {
 
+            Optional<TruckEntity> existingTruck =
+                    truckRepository.findByDriver_DriverId(
+                            driverEntity.getDriverId());
+
+            if (existingTruck.isPresent()) {
+                TruckEntity truck = existingTruck.get();
+
+                // Remove driver from truck
+                truck.setDriver(null);
+
+                // Save the truck without a driver
+                truckRepository.save(truck);
+
+                // Make driver available again
+                driverEntity.setDriverStatus(DriverStatus.AVAILABLE);
+            }
+
+            // Update driver profile details
             driverRepository.save(driverEntity);
 
             response.setStatusCode(200);
-            response.setMessage("Driver Details Updated Successfully");
+            response.setMessage(
+                    "Driver details updated and truck assignment removed successfully");
 
             return response;
         }
@@ -156,7 +175,7 @@ public class DriverServiceImpl implements DriverService {
         }
 
         // 11. Validate truck status for a NEW assignment
-        if (truck.getTruckStatus() != TruckStatus.EMPTY) {
+        if (truck.getTruckStatus() != TruckStatus.AVAILABLE) {
 
             throw new RuntimeException(
                     "This truck is not empty and cannot be assigned.");
@@ -189,13 +208,30 @@ public class DriverServiceImpl implements DriverService {
             List<DriverDetailsDto> driverDetailsDtos = new ArrayList<>();
 
             for (DriverEntity driverEntities : driverEntity) {
+
                 DriverDetailsDto driverDetailsDto = new DriverDetailsDto();
+
                 driverDetailsDto.setDriverLicense(driverEntities.getDriverLicense());
                 driverDetailsDto.setOwnerId(driverEntities.getOwner().getOwnerId());
                 driverDetailsDto.setDriverId(driverEntities.getDriverId());
                 driverDetailsDto.setDriverName(driverEntities.getDriverName());
                 driverDetailsDto.setDriverMobileNumber(driverEntities.getDriverMobileNumber());
                 driverDetailsDto.setDriverNative(driverEntities.getDriverNative());
+
+                // Get the truck mapped to this driver
+                if (driverEntities.getTruck() != null) {
+                    driverDetailsDto.setTruckId(
+                            driverEntities.getTruck().getTruckId()
+                    );
+
+                    driverDetailsDto.setTruckNumber(
+                            driverEntities.getTruck().getTruckNumber()
+                    );
+                } else {
+                    driverDetailsDto.setTruckId(null);
+                    driverDetailsDto.setTruckNumber(null);
+                }
+
                 driverDetailsDtos.add(driverDetailsDto);
             }
 

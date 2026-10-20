@@ -30,9 +30,9 @@ public class TruckController {
         return  ResponseEntity.ok(truckService.getTruckDetails(ownerId));
     }
 
-    @GetMapping("/getavailabletruck")
-    private ResponseEntity<List<TruckDetailsDto>> getAvailableTruck(@RequestParam String ownerId)
-    {
-        return  ResponseEntity.ok(truckService.getAvailableTruck(ownerId));
-    }
+        @GetMapping("/getavailabletruck")
+        private ResponseEntity<List<TruckDetailsDto>> getAvailableTruck(@RequestParam String ownerId)
+        {
+            return  ResponseEntity.ok(truckService.getAvailableTruck(ownerId));
+        }
 }
