@@ -31,7 +31,7 @@ public class TruckEntity {
     // Truck Status
     @Enumerated(EnumType.STRING)
     @Column(name="truck_status", nullable = false)
-    private TruckStatus truckStatus  = TruckStatus.AVAILABLE;
+    private TruckStatus truckStatus  = TruckStatus.EMPTY;
 
     private String currentLocation;
 
@@ -42,6 +42,6 @@ public class TruckEntity {
 
     // Assigned Driver (Optional)
     @OneToOne
-    @JoinColumn(name = "driver_id")
+    @JoinColumn(name = "driver_id", unique = true)
     private DriverEntity driver;
 }

@@ -7,10 +7,12 @@ import com.RoadSetu.RoadSetu.entity.DriverEntity;
 import com.RoadSetu.RoadSetu.entity.OwnerEntity;
 import com.RoadSetu.RoadSetu.entity.TruckEntity;
 import com.RoadSetu.RoadSetu.enums.DriverStatus;
+import com.RoadSetu.RoadSetu.enums.TruckStatus;
 import com.RoadSetu.RoadSetu.repository.DriverRepository;
 import com.RoadSetu.RoadSetu.repository.OwnerRepository;
 import com.RoadSetu.RoadSetu.repository.TruckRepository;
 import com.RoadSetu.RoadSetu.service.DriverService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -32,49 +34,144 @@ public class DriverServiceImpl implements DriverService {
     @Autowired
     private TruckRepository truckRepository;
 
+
+    @Transactional
     @Override
     public ResponseDto saveDriverDetails(DriverDetailsDto driverDetailsDto) {
+
         ResponseDto response = new ResponseDto();
-        try {
-            if (driverDetailsDto.getDriverId() == null || driverDetailsDto.getDriverId().isEmpty()) {
 
-                OwnerEntity owner = ownerRepository
-                        .findById(driverDetailsDto.getOwnerId())
-                        .orElseThrow(() ->
-                                new RuntimeException("Owner Not Found"));
+        // 1. Create a new driver
+        if (driverDetailsDto.getDriverId() == null
+                || driverDetailsDto.getDriverId().isEmpty()) {
 
+            OwnerEntity owner = ownerRepository
+                    .findById(driverDetailsDto.getOwnerId())
+                    .orElseThrow(() ->
+                            new RuntimeException("Owner Not Found"));
 
-                //Add New Driver
-                DriverEntity driverEntity = new DriverEntity();
-                driverEntity.setDriverName(driverDetailsDto.getDriverName());
-                driverEntity.setDriverEmailId(driverDetailsDto.getDriverEmailId());
-                driverEntity.setPassword(driverDetailsDto.getPassword());
-                driverEntity.setDriverMobileNumber(driverDetailsDto.getDriverMobileNumber());
-                driverEntity.setDriverLicense(driverDetailsDto.getDriverLicense());
-                driverEntity.setDriverNative(driverDetailsDto.getDriverNative());
-                driverEntity.setRole("DRIVER");
-                driverEntity.setOwner(owner);
+            DriverEntity driverEntity = new DriverEntity();
 
-                driverRepository.save(driverEntity);
-                response.setMessage("Driver Created Successfully");
-                response.setStatusCode(200);
-            } else {
+            driverEntity.setDriverName(driverDetailsDto.getDriverName());
+            driverEntity.setDriverEmailId(driverDetailsDto.getDriverEmailId());
+            driverEntity.setPassword(driverDetailsDto.getPassword());
+            driverEntity.setDriverMobileNumber(
+                    driverDetailsDto.getDriverMobileNumber());
+            driverEntity.setDriverLicense(
+                    driverDetailsDto.getDriverLicense());
+            driverEntity.setDriverNative(driverDetailsDto.getDriverNative());
+            driverEntity.setRole("DRIVER");
+            driverEntity.setOwner(owner);
+            driverEntity.setDriverStatus(DriverStatus.AVAILABLE);
 
-                Optional<DriverEntity> optionalDriverEntity = driverRepository.findByDriverId(driverDetailsDto.getDriverId());
-                if (optionalDriverEntity.isPresent()) {
-                    DriverEntity driverEntity = optionalDriverEntity.get();
-                    driverEntity.setDriverName(driverDetailsDto.getDriverName());
-                    driverEntity.setDriverMobileNumber(driverDetailsDto.getDriverMobileNumber());
-                    driverEntity.setDriverLicense(driverDetailsDto.getDriverLicense());
-                    driverEntity.setDriverNative(driverDetailsDto.getDriverNative());
-                    driverRepository.save(driverEntity);
-                    response.setStatusCode(200);
-                    response.setMessage("Driver Details Updated Successfully");
-                }
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+            driverRepository.save(driverEntity);
+
+            response.setStatusCode(200);
+            response.setMessage("Driver Created Successfully");
+
+            return response;
         }
+
+        // 2. Find existing driver
+        DriverEntity driverEntity = driverRepository
+                .findByDriverId(driverDetailsDto.getDriverId())
+                .orElseThrow(() ->
+                        new RuntimeException("Driver Not Found"));
+
+        // 3. Update basic driver details
+        driverEntity.setDriverName(driverDetailsDto.getDriverName());
+        driverEntity.setDriverMobileNumber(
+                driverDetailsDto.getDriverMobileNumber());
+        driverEntity.setDriverLicense(
+                driverDetailsDto.getDriverLicense());
+        driverEntity.setDriverNative(driverDetailsDto.getDriverNative());
+
+        // 4. If no truck was selected, update profile only
+        if (driverDetailsDto.getTruckId() == null
+                || driverDetailsDto.getTruckId().isEmpty()) {
+
+            driverRepository.save(driverEntity);
+
+            response.setStatusCode(200);
+            response.setMessage("Driver Details Updated Successfully");
+
+            return response;
+        }
+
+        // 5. Find selected truck
+        TruckEntity truck = truckRepository
+                .findById(driverDetailsDto.getTruckId())
+                .orElseThrow(() ->
+                        new RuntimeException("Truck Not Found"));
+
+        // 6. Validate owner
+        if (!driverEntity.getOwner().getOwnerId()
+                .equals(truck.getOwner().getOwnerId())) {
+
+            throw new RuntimeException(
+                    "Driver and truck must belong to the same owner");
+        }
+
+        // 7. Check whether truck is already mapped to another driver
+        if (truck.getDriver() != null
+                && !truck.getDriver().getDriverId()
+                .equals(driverEntity.getDriverId())) {
+
+            throw new RuntimeException(
+                    "This truck is already mapped to another driver.");
+        }
+
+        // 8. Check whether driver is already mapped to another truck
+        Optional<TruckEntity> existingTruck =
+                truckRepository.findByDriver_DriverId(
+                        driverEntity.getDriverId());
+
+        if (existingTruck.isPresent()
+                && !existingTruck.get().getTruckId()
+                .equals(truck.getTruckId())) {
+
+            throw new RuntimeException(
+                    "This driver is already mapped to another truck.");
+        }
+
+        // 9. If already mapped to this truck, allow profile update
+        if (existingTruck.isPresent()
+                && existingTruck.get().getTruckId()
+                .equals(truck.getTruckId())) {
+
+            driverRepository.save(driverEntity);
+
+            response.setStatusCode(200);
+            response.setMessage(
+                    "Driver details updated successfully. Existing truck assignment retained.");
+
+            return response;
+        }
+
+        // 10. Validate driver availability for a NEW assignment
+        if (driverEntity.getDriverStatus() != DriverStatus.AVAILABLE) {
+
+            throw new RuntimeException(
+                    "This driver is not available for assignment.");
+        }
+
+        // 11. Validate truck status for a NEW assignment
+        if (truck.getTruckStatus() != TruckStatus.EMPTY) {
+
+            throw new RuntimeException(
+                    "This truck is not empty and cannot be assigned.");
+        }
+
+        // 12. Map driver to truck
+        truck.setDriver(driverEntity);
+        driverEntity.setDriverStatus(DriverStatus.ASSIGNED);
+
+        truckRepository.save(truck);
+        driverRepository.save(driverEntity);
+
+        response.setStatusCode(200);
+        response.setMessage("Driver assigned to truck successfully");
+
         return response;
     }
 
